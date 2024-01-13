@@ -9,12 +9,12 @@ use std::f32::consts::PI;
 use bevy::{
     prelude::*,
     sprite::MaterialMesh2dBundle,
-    window::{PrimaryWindow, WindowResized},
+    window::{PrimaryWindow, WindowMode, WindowResized},
 };
 use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
 
-const NUM_BALLS: u32 = 100;
+const NUM_BALLS: u32 = 1000;
 // const POS_MIN: f32 = -50.;
 const POS_MAX: f32 = 5.;
 const RADIUS: f32 = 5.;
@@ -24,9 +24,16 @@ const RESTITUTION: f32 = 1.;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                mode: WindowMode::BorderlessFullscreen,
+                resizable: false,
+                ..default()
+            }),
+            ..default()
+        }))
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
-        // .add_plugins(RapierDebugRenderPlugin::default())
+        .add_plugins(RapierDebugRenderPlugin::default())
         .init_resource::<MyWorldCoords>()
         .add_systems(Startup, setup)
         .add_systems(
@@ -142,8 +149,6 @@ fn update_balls(
             transform.translation = new_position;
 
             velocity.linvel = new_velocity;
-
-
         }
     }
 }
@@ -182,7 +187,7 @@ fn update_cursor(
 }
 
 fn on_resize_system(mut resize_reader: EventReader<WindowResized>) {
-    for e in resize_reader.read() {
+    for e in resize_reader.iter() {
         // When resolution is being changed
         println!("{:.1} x {:.1}", e.width, e.height);
     }
